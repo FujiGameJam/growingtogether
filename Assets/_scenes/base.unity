@@ -1042,6 +1042,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 34335f3de2e107942ba364437a888225, type: 3}
   m_Name: 
+  numNodes: 4
+  gravityScale: .200000003
+  friction: 2
 --- !u!1 &2062411462
 GameObject:
   m_ObjectHideFlags: 0
