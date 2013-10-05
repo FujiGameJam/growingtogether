@@ -22,6 +22,7 @@ ModelImporter:
     100032: bone_w_004
     100034: goo
     100036: //RootNode
+    100038: bone_e_001 1
     400000: bone_e_001
     400002: bone_e_002
     400004: bone_e_003
@@ -41,10 +42,12 @@ ModelImporter:
     400032: bone_w_004
     400034: goo
     400036: //RootNode
+    400038: bone_e_001 1
     2300000: goo
     3300000: goo
     4300000: goo
     9500000: //RootNode
+    11100000: //RootNode
     13700000: goo
   materials:
     importMaterials: 1
@@ -96,5 +99,5 @@ ModelImporter:
     rootMotionBoneName: 
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   additionalBone: 1
-  animationType: 0
+  animationType: 1
   userData: 
