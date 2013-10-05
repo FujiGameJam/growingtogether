@@ -4,6 +4,13 @@ using System.Collections.Generic;
 
 public class Tether : MonoBehaviour
 {
+	public int numNodes = 5;
+	public int solverIterations = 3;
+	public float gravityScale = 0.1f;
+	public float friction = 2.0f;
+	static public float tensionRamp = 1.5f;
+	static public float purchaseDistance = 2.0f;
+
 	public class Node
 	{
 		public Vector3 pos;
@@ -11,6 +18,7 @@ public class Tether : MonoBehaviour
 		public float mass;
 
 		public Node parent;
+		//public Tether tether;
 
 		public Vector3 Force()
 		{
@@ -21,7 +29,8 @@ public class Tether : MonoBehaviour
 				f += n.parent.pos - n.pos;
 				n = n.parent;
 			}
-			return f;
+			
+			return f.normalized * Mathf.Pow(Mathf.Max(f.magnitude - Tether.purchaseDistance, 0.0f), Tether.tensionRamp);
 		}
 	}
 
@@ -31,10 +40,6 @@ public class Tether : MonoBehaviour
 		public Node n1, n2;
 		public float tension;
 	}
-
-	public int numNodes = 5;
-	public float gravityScale = 0.2f;
-	public float friction = 2.0f;
 
 	List<Node> nodes;
 	List<Joint> joints;
@@ -47,7 +52,7 @@ public class Tether : MonoBehaviour
 		nodes = new List<Node>();
 		joints = new List<Joint>();
 
-		root = CreateNode(transform.position, 1);
+		root = CreateNode(transform.position, 1, null);
 
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
 
@@ -84,12 +89,13 @@ public class Tether : MonoBehaviour
 			Gizmos.DrawCube(node.pos, Vector3.one * 0.1f);
 	}
 
-	Node CreateNode(Vector3 pos, float mass, Node parent = null)
+	Node CreateNode(Vector3 pos, float mass, Node parent)
 	{
 		Node n = new Node();
 		n.prevPos = n.pos = pos;
 		n.mass = mass;
 		n.parent = parent;
+		//n.tether = this;
 		nodes.Add(n);
 		return n;
 	}
@@ -108,7 +114,7 @@ public class Tether : MonoBehaviour
 			Joint j = new Joint();
 			j.n1 = prev;
 			j.n2 = n;
-			j.tension = 1;
+			j.tension = 1.0f;
 			joints.Add(j);
 			prev = n;
 		}
@@ -135,26 +141,29 @@ public class Tether : MonoBehaviour
 		}
 
 		// calculate joints
-		foreach (var j in joints)
+		for (int i = 0; i < solverIterations; ++i)
 		{
-			Vector3 diff = j.n2.pos - j.n1.pos;
+			foreach (var j in joints)
+			{
+				Vector3 diff = j.n2.pos - j.n1.pos;
 
-			Vector3 dir = diff.normalized;
+				Vector3 dir = diff.normalized;
 
-			float d = diff.magnitude * j.tension;
-			float tension = d * 0.5f;
+				float d = diff.magnitude * j.tension;
+				float tension = d * 0.5f;
 
-			float totalMass = j.n1.mass + j.n2.mass;
-			float n1bias = j.n1.mass / totalMass;
-			float n2bias = j.n2.mass / totalMass;
-			j.c1 = dir * tension * n1bias;
-			j.c2 = -dir * tension * n2bias;
-		}
+				float totalMass = j.n1.mass + j.n2.mass;
+				float n1bias = j.n1.mass / totalMass;
+				float n2bias = j.n2.mass / totalMass;
+				j.c1 = dir * tension * n1bias;
+				j.c2 = -dir * tension * n2bias;
+			}
 
-		foreach (var j in joints)
-		{
-			j.n1.pos += j.c1;
-			j.n2.pos += j.c2;
+			foreach (var j in joints)
+			{
+				j.n1.pos += j.c1;
+				j.n2.pos += j.c2;
+			}
 		}
 	}
 }
