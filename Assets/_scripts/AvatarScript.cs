@@ -88,6 +88,7 @@ public class AvatarScript : MonoBehaviour
 	{
 		Vector3 inputVector = new Vector3(Input.GetAxis ( Player() + "Horizontal" ), 0.0f, Input.GetAxis ( Player() + "Vertical" ));
 
+		// detect is the player is on the ground
 		bool grounded = false;
 		if (m_velocity.y <= 0.0)
 		{
@@ -101,6 +102,7 @@ public class AvatarScript : MonoBehaviour
 			}
 		}
 
+		// detect state change
 		if(grounded)
 		{
 			if (Input.GetButtonDown (Player() + "Jump"))
@@ -127,9 +129,10 @@ public class AvatarScript : MonoBehaviour
 			}
 		}
 
-		if(!grounded && m_velocity.y < 0.0f)
-				controlState = ControlState.Falling;
+		if (!grounded && controlState != ControlState.Jumping)
+			controlState = ControlState.Falling;
 
+		// update player for state
 		switch(controlState)
 		{
 			case ControlState.Walking:
@@ -151,8 +154,8 @@ public class AvatarScript : MonoBehaviour
 				Vector3 acc = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
 				acc.y = m_playerGravity;
 
-				Vector3 f = tether.Force();
-				float dir = Vector3.Dot(transform.forward, f);
+				Vector3 force = tether.Force();
+				float dir = Vector3.Dot(inputVector, force);
 
 				m_velocity += acc*Time.deltaTime;
 				m_velocity += tether.Force()*(dir > 0.0f? m_airTensionMultiplier*60.0f : 1.0f)*Time.deltaTime;
@@ -164,91 +167,7 @@ public class AvatarScript : MonoBehaviour
 				}
 				break;
 		}
-		
-		rigidbody.velocity = m_velocity;
-
-/*			
-		Vector3 inputVector = new Vector3(Input.GetAxis ( Player() + "Horizontal" ), 0.0f, Input.GetAxis ( Player() + "Vertical" ));
-
-		if (inputVector.magnitude > 0.1)
-		{
-			transform.rotation = Quaternion.Slerp (transform.rotation, Quaternion.LookRotation (inputVector), Time.deltaTime * m_turnSpeed);
-		}
-
-		bool grounded = false;
-		bool anchored = false;
-		if (m_verticalForce <= 0.0)
-		{
-			foreach (RaycastHit hit in Physics.SphereCastAll (new Ray(transform.position + new Vector3(0.0f, 0.9f, 0.0f), -Vector3.up), 0.5f, 0.5f))
-			{
-				if (!hit.transform.CompareTag ("Player"))
-				{
-					grounded = true;
-					break;
-				}
-			}
-		}
-		
-		if (grounded)
-		{
-			if (Input.GetButtonDown (Player() + "Jump"))
-			{
-				m_verticalForce = 20.0f;
-			}
-			else
-			{
-				m_verticalForce = 0.0f;
-				
-				if (Input.GetAxis (Player () + "Anchor") > 0.1f)
-				{
-					m_currentSpeed = 0.0f;
-					anchored = true;
-				}
-				else if (Input.GetAxis (Player () + "Run") > 0.1f)
-				{
-					m_currentSpeed = m_runSpeed;
-				}
-				else
-				{
-					m_currentSpeed = m_movementSpeed;
-				}
-			}
-		}
-		else
-		{
-			if (transform.position.y > -1.0)
-			{
-				m_verticalForce -= Time.deltaTime * 50.0f;
-			}
-			else
-			{
-				m_verticalForce = Mathf.Lerp (m_verticalForce, transform.position.y * -2.0f, Time.deltaTime * 5.0f);
-			}
-			
-			if (transform.position.y < -0.3)
-			{
-				m_currentSpeed = 1.0f;
-			}
-		}
-		
-		inputVector *= m_currentSpeed;
-		inputVector.y = m_verticalForce;
-		
-		if(grounded)
-		{
-			m_velocity = inputVector;
-
-			if (!anchored)
-			{
-				rigidbody.velocity += tether.Force() * (grounded ? 1 : 3);
-			}
-		}
-		else
-		{
-			rigidbody.velocity += m_velocity*Time.deltaTime;
-		}
 
 		rigidbody.velocity = m_velocity;
-*/
 	}
 }

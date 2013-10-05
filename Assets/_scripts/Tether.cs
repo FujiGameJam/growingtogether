@@ -11,6 +11,8 @@ public class Tether : MonoBehaviour
 	static public float tensionRamp = 1.5f;
 	static public float purchaseDistance = 2.0f;
 
+	float sphereSize = 0.2f;
+
 	public class Node
 	{
 		public Vector3 pos;
@@ -18,7 +20,6 @@ public class Tether : MonoBehaviour
 		public float mass;
 
 		public Node parent;
-		//public Tether tether;
 
 		public Vector3 Force()
 		{
@@ -29,7 +30,7 @@ public class Tether : MonoBehaviour
 				f += n.parent.pos - n.pos;
 				n = n.parent;
 			}
-			
+
 			return f.normalized * Mathf.Pow(Mathf.Max(f.magnitude - Tether.purchaseDistance, 0.0f), Tether.tensionRamp);
 		}
 	}
@@ -71,7 +72,7 @@ public class Tether : MonoBehaviour
 		foreach (var player in objects)
 		{
 			AvatarScript avatar = player.GetComponent<AvatarScript>();
-			avatar.GetTether().pos = avatar.transform.position;
+			avatar.GetTether().pos = avatar.transform.position + Vector3.up;
 		}
 
 		Step();
@@ -85,12 +86,14 @@ public class Tether : MonoBehaviour
 			return;
 
 		Gizmos.color = Color.blue;
-		foreach(var node in nodes)
-			Gizmos.DrawCube(node.pos, Vector3.one * 0.1f);
+		foreach (var node in nodes)
+			Gizmos.DrawSphere(node.pos, sphereSize);
 	}
 
 	Node CreateNode(Vector3 pos, float mass, Node parent)
 	{
+		pos += Vector3.up;
+
 		Node n = new Node();
 		n.prevPos = n.pos = pos;
 		n.mass = mass;
@@ -102,7 +105,9 @@ public class Tether : MonoBehaviour
 
 	Node CreateTendril(Vector3 target, int numNodes)
 	{
-		Vector3 diff = target - transform.position;
+		target += Vector3.up;
+
+		Vector3 diff = target - root.pos;
 		diff /= numNodes;
 
 		Node prev = root;
@@ -110,11 +115,19 @@ public class Tether : MonoBehaviour
 
 		for (var i = 1; i <= numNodes; ++i)
 		{
+			// some random function to calculate the tension values (non-linear distribution of nodes)
+			//float x = i - 1;
+			//x = 1.0f / numNodes * x;
+			//x = Mathf.Pow(x, x);
+			//x *= x;
+			float x = 1;
+
+			// create the joint
 			n = CreateNode(transform.position + diff * i, i == numNodes ? 0 : 1, prev);
 			Joint j = new Joint();
 			j.n1 = prev;
 			j.n2 = n;
-			j.tension = 1.0f;
+			j.tension = x;
 			joints.Add(j);
 			prev = n;
 		}
@@ -164,6 +177,63 @@ public class Tether : MonoBehaviour
 				j.n1.pos += j.c1;
 				j.n2.pos += j.c2;
 			}
+
+			Collide();
 		}
+	}
+
+	void Collide()
+	{
+		foreach (var n in nodes)
+		{
+			Vector3 d = n.pos - n.prevPos;
+			Ray r = new Ray(n.prevPos, d);
+			foreach (RaycastHit hit in Physics.SphereCastAll(r, sphereSize, d.magnitude))
+			{
+				if (hit.transform.CompareTag("Player"))
+					continue;
+
+				// slide the sphere along the surface...
+				Vector3 perpendicular = Vector3.Cross(r.direction, hit.normal).normalized;
+				Vector3 slide = Vector3.Cross(hit.normal, perpendicular);
+				float dot = Vector3.Dot(r.direction, slide);
+				n.pos = r.origin + r.direction * hit.distance + slide * dot * (d.magnitude - hit.distance) + hit.normal * 0.01f;
+			}
+		}
+	}
+
+	void Teleport()
+	{
+		// find new root, average of player positions
+		root.pos = Vector3.zero;
+		GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
+		foreach (var player in objects)
+			root.pos += player.transform.position;
+		root.pos /= objects.Length;
+		root.pos += Vector3.up;
+
+		// set tether chain nodes
+		foreach (var player in objects)
+		{
+			AvatarScript avatar = player.GetComponent<AvatarScript>();
+			Node n = avatar.GetTether();
+
+			// tether starts at player position
+			Vector3 tether = avatar.transform.position - root.pos;
+			tether /= numNodes;
+
+			// nodes lerp between player position and root position for each node back towards the root
+			for (var i = 0; i < numNodes; ++i)
+			{
+				n.prevPos = n.pos = avatar.transform.position + tether * i + Vector3.up;
+				n = n.parent;
+			}
+		}
+
+		// rin a simulation step
+		Step();
+
+		// set the transform to the root pos
+		transform.position = root.pos;
 	}
 }
