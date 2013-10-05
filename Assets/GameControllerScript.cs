@@ -72,6 +72,8 @@ public class GameControllerScript : MonoBehaviour
 					m_players[i].SendMessage("Reset");
 				}
 			}
+			
+			GameObject.Find ("tether").SendMessage ("Teleport");
 		}
 	}
 }

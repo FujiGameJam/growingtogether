@@ -100,7 +100,7 @@ public class AvatarScript : MonoBehaviour
 		
 		// detect is the player is on the ground
 		bool grounded = false;
-		if (m_velocity.y <= 0.0)
+		if (controlState != ControlState.Jumping)
 		{
 			foreach (RaycastHit hit in Physics.SphereCastAll (new Ray(transform.position + new Vector3(0.0f, 0.9f, 0.0f), -Vector3.up), 0.5f, 0.5f))
 			{
@@ -112,9 +112,16 @@ public class AvatarScript : MonoBehaviour
 			}
 		}
 		
+		Debug.Log ("player ID " + m_playerID + " : " + m_velocity.y);
+		
 		// detect state change
 		if(grounded)
 		{
+			if (m_anim.IsPlaying ("fall"))
+			{
+				m_anim.Play ("land");
+			}
+			
 			if (Input.GetButtonDown (Player() + "Jump"))
 			{
 				controlState = ControlState.Jumping;
@@ -123,6 +130,8 @@ public class AvatarScript : MonoBehaviour
 				// set initialvelocity
 				m_velocity = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
 				m_velocity.y = m_jumpVelocity;
+				
+				m_anim.Play ("jump");
 			}
 			else if (Input.GetAxis (Player() + "Anchor") >= 0.1f)
 			{
@@ -155,19 +164,20 @@ public class AvatarScript : MonoBehaviour
 				}
 				else
 				{
-					m_anim.CrossFade ("idle", 0.25f);
+					if (!m_anim.IsPlaying ("land") || m_anim["land"].time > m_anim["land"].length - 0.25f)
+					{
+						m_anim.CrossFade ("idle", 0.25f);
+					}
 				}
 
 				m_velocity = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
 				m_velocity += tether.Force();
 				break;
 			case ControlState.Anchored:
-				m_anim.CrossFade ("idle", 0.1f);
+				m_anim.CrossFade ("anchor_idle", 0.1f);
 				break;
 			case ControlState.Jumping:
 			case ControlState.Falling:
-				m_anim.CrossFade ("idle", 0.3f);
-
 				transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(inputVector), Time.deltaTime * m_turnSpeed);
 
 				Vector3 acc = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
@@ -178,11 +188,34 @@ public class AvatarScript : MonoBehaviour
 
 				m_velocity += acc*Time.deltaTime;
 				m_velocity += tether.Force()*(dir > 0.0f? m_airTensionMultiplier*60.0f : 1.0f)*Time.deltaTime;
+			
+				if (controlState == ControlState.Jumping && m_velocity.y <= 0.0f)
+				{
+					controlState = ControlState.Falling;
+				}
 
 				if(transform.position.y < 0.0f)
 				{
 					m_velocity.y += -m_playerGravity*-transform.position.y*0.7f*Time.deltaTime;
 					m_velocity *= 1.0f-m_waterDamping*Time.deltaTime;
+				
+					m_anim.CrossFade ("swim", 0.25f);
+				
+					m_timeInWater += Time.deltaTime;
+				
+					if (m_timeInWater > 1.5f)
+					{
+						GameObject.FindGameObjectWithTag ("GameController").GetComponent<GameControllerScript>().Respawn ();
+					}
+				}
+				else
+				{
+					if (!m_anim.IsPlaying ("jump"))
+					{
+						m_anim.CrossFade ("fall", 0.125f);
+					}
+				
+					m_timeInWater = 0.0f;
 				}
 				break;
 		}

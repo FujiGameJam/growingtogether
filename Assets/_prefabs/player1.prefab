@@ -1312,7 +1312,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100092}
-  m_LocalRotation: {x: 1.11022302e-16, y: -3.17377698e-20, z: .000184249133, w: 1}
+  m_LocalRotation: {x: 2.18556924e-08, y: 4.02689297e-12, z: .000184249147, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: .774606347, y: .774606228, z: .774606287}
   m_Children: []
@@ -1324,7 +1324,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100094}
   m_LocalRotation: {x: -.5, y: .5, z: .5, w: .5}
-  m_LocalPosition: {x: -.000952170056, y: .541638315, z: .0038869225}
+  m_LocalPosition: {x: -.000952170056, y: .526313961, z: 0}
   m_LocalScale: {x: .99999994, y: .99999994, z: 1}
   m_Children:
   - {fileID: 400090}
@@ -1377,17 +1377,23 @@ Animation:
   m_GameObject: {fileID: 100096}
   m_Enabled: 1
   serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: ba0fbb0e703368445800f1c40dd4586a, type: 3}
+  m_Animation: {fileID: 7400000, guid: a4970b740961c90448c2a29171522ddd, type: 3}
   m_Animations:
+  - {fileID: 7400000, guid: a4970b740961c90448c2a29171522ddd, type: 3}
+  - {fileID: 7400000, guid: 4f467b50ab93e114dbd222c7fe0b3506, type: 3}
+  - {fileID: 7400000, guid: 3c48749cca95d9248b1e9fec4013bac7, type: 3}
+  - {fileID: 7400000, guid: 87b92055b9ce02d41a6a760bfe88ee23, type: 3}
   - {fileID: 7400000, guid: ba0fbb0e703368445800f1c40dd4586a, type: 3}
   - {fileID: 7400000, guid: 9dfcc073d1c03d949affee01b5d3b0c3, type: 3}
+  - {fileID: 7400006, guid: f8b2e20bce0c7e44297e7ebffb73176d, type: 3}
+  - {fileID: 7400000, guid: 226f47554f89d6545b214d6b8aeeea71, type: 3}
   m_WrapMode: 0
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 1
   m_UserAABB:
-    m_Center: {x: -.0337947607, y: 1.04760909, z: .0689355433}
-    m_Extent: {x: .76786387, y: 1.03544617, z: .350888669}
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1407,7 +1413,7 @@ MonoBehaviour:
   m_jumpVelocity: 20
   m_playerGravity: -50
   m_airTensionMultiplier: 3
-  m_waterDamping: 10
+  m_waterDamping: 3
 --- !u!136 &13600000
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -1492,8 +1498,8 @@ SkinnedMeshRenderer:
   - {fileID: 400032}
   m_RootBone: {fileID: 400090}
   m_AABB:
-    m_Center: {x: -.504806519, y: .0649284273, z: -.000405430794}
-    m_Extent: {x: 1.03428185, y: .350768268, z: 1.85501218}
+    m_Center: {x: -.777527094, y: .335115612, z: -.000405550003}
+    m_Extent: {x: 1.46399546, y: 1.50198483, z: 1.85501218}
   m_DirtyAABB: 0
 --- !u!1001 &100100000
 Prefab:

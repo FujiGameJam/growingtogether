@@ -202,7 +202,7 @@ public class Tether : MonoBehaviour
 		}
 	}
 
-	void Teleport()
+	public void Teleport()
 	{
 		// find new root, average of player positions
 		root.pos = Vector3.zero;
