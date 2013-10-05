@@ -3,6 +3,7 @@ using System.Collections;
 
 public class cameraScript : MonoBehaviour
 {
+	public Transform m_water;
 	public Transform m_cameraMover;
 	public Transform m_cameraGoal;
 	public float m_followSpeed = 5.0f;
@@ -33,5 +34,10 @@ public class cameraScript : MonoBehaviour
 		transform.position = Vector3.Lerp (transform.position, m_cameraGoal.position, Time.deltaTime * m_followSpeed);
 		
 		transform.rotation = Quaternion.Slerp (transform.rotation, Quaternion.LookRotation ((m_cameraMover.position + Vector3.up) - transform.position), Time.deltaTime * m_trackSpeed);
+		
+		Vector3 waterPos = transform.position;
+		waterPos.y = 0.0f;
+		
+		m_water.position = waterPos;
 	}
 }

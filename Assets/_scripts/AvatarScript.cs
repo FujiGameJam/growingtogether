@@ -22,7 +22,9 @@ public class AvatarScript : MonoBehaviour
 	
 	public int m_playerID;
 	public ControlID m_controlID = ControlID.player1;
-
+	
+	public Animation m_anim;
+	
 	public float m_movementSpeed = 5.0f;
 	public float m_runSpeed = 8.0f;
 	public float m_turnSpeed = 10.0f;
@@ -34,10 +36,18 @@ public class AvatarScript : MonoBehaviour
 	Vector3 m_velocity = Vector3.zero;
 	
 	float m_stamina = 1.0f;
+	float m_timeInWater = 0.0f;
 
 	Tether.Node tether;
 	
 	ControlState controlState = ControlState.Walking;
+	
+	public void Reset()
+	{
+		rigidbody.velocity = Vector3.zero;
+		m_velocity = Vector3.zero;
+		m_timeInWater = 0.0f;
+	}
 
 	public void SetTether(Tether.Node n)
 	{
@@ -69,7 +79,7 @@ public class AvatarScript : MonoBehaviour
 				break;
 		}
 		
-		if (Input.GetKey(KeyCode.Space))
+		if (Input.GetKey(KeyCode.Joystick1Button1))
 		{
 			result = "p1";
 		}
@@ -87,7 +97,7 @@ public class AvatarScript : MonoBehaviour
 	void Update ()
 	{
 		Vector3 inputVector = new Vector3(Input.GetAxis ( Player() + "Horizontal" ), 0.0f, Input.GetAxis ( Player() + "Vertical" ));
-
+		
 		// detect is the player is on the ground
 		bool grounded = false;
 		if (m_velocity.y <= 0.0)
@@ -101,7 +111,7 @@ public class AvatarScript : MonoBehaviour
 				}
 			}
 		}
-
+		
 		// detect state change
 		if(grounded)
 		{
@@ -129,26 +139,35 @@ public class AvatarScript : MonoBehaviour
 			}
 		}
 
-		if (!grounded && controlState != ControlState.Jumping)
-			controlState = ControlState.Falling;
+		if(!grounded && controlState != ControlState.Jumping)
+		{
+				controlState = ControlState.Falling;
+		}
 
-		// update player for state
 		switch(controlState)
 		{
 			case ControlState.Walking:
 			case ControlState.Running:
-				if (inputVector.magnitude > 0.1)
+				if (inputVector.magnitude > 0.1f)
 				{
 					transform.rotation = Quaternion.Slerp (transform.rotation, Quaternion.LookRotation (inputVector), Time.deltaTime * m_turnSpeed);
+					m_anim.CrossFade ("jog", 0.125f);
 				}
-			
+				else
+				{
+					m_anim.CrossFade ("idle", 0.25f);
+				}
+
 				m_velocity = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
 				m_velocity += tether.Force();
 				break;
 			case ControlState.Anchored:
+				m_anim.CrossFade ("idle", 0.1f);
 				break;
 			case ControlState.Jumping:
 			case ControlState.Falling:
+				m_anim.CrossFade ("idle", 0.3f);
+
 				transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(inputVector), Time.deltaTime * m_turnSpeed);
 
 				Vector3 acc = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
@@ -167,7 +186,7 @@ public class AvatarScript : MonoBehaviour
 				}
 				break;
 		}
-
+		
 		rigidbody.velocity = m_velocity;
 	}
 }

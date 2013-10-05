@@ -1377,9 +1377,10 @@ Animation:
   m_GameObject: {fileID: 100096}
   m_Enabled: 1
   serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: 71fa6cc59bc19b244927735bf32b72a4, type: 3}
+  m_Animation: {fileID: 7400000, guid: ba0fbb0e703368445800f1c40dd4586a, type: 3}
   m_Animations:
-  - {fileID: 7400000, guid: 71fa6cc59bc19b244927735bf32b72a4, type: 3}
+  - {fileID: 7400000, guid: ba0fbb0e703368445800f1c40dd4586a, type: 3}
+  - {fileID: 7400000, guid: 9dfcc073d1c03d949affee01b5d3b0c3, type: 3}
   m_WrapMode: 0
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
@@ -1399,9 +1400,14 @@ MonoBehaviour:
   m_Name: 
   m_playerID: 0
   m_controlID: 0
+  m_anim: {fileID: 11100000}
   m_movementSpeed: 4
   m_runSpeed: 9
   m_turnSpeed: 5
+  m_jumpVelocity: 20
+  m_playerGravity: -50
+  m_airTensionMultiplier: 3
+  m_waterDamping: 10
 --- !u!136 &13600000
 CapsuleCollider:
   m_ObjectHideFlags: 1
