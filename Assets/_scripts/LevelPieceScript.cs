@@ -14,9 +14,9 @@ public class LevelPieceScript : MonoBehaviour
 		return m_checkpoint;
 	}
 	
-	public Transform GetTreasure()
+	public void HideTreasure()
 	{
-		return m_treasureNode;
+		m_treasureNode.gameObject.SetActive(false);
 	}
 	
 	public levelConnectScript GetLevelConnect()

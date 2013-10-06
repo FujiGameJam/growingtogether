@@ -21,6 +21,7 @@ public class CoinScript : MonoBehaviour {
 		{
 			m_collectable = false;
 			animation.CrossFade ("coin_collect", 0.025f);
+			GameObject.FindGameObjectWithTag ("GameController").GetComponent <GameControllerScript>().AddPoint(other.GetComponent<AvatarScript>().m_playerID);
 		}
 	}
 	
