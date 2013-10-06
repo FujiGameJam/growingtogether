@@ -20,8 +20,9 @@ public class GameControllerScript : MonoBehaviour
 		int levelCount = 0;
 		Transform currentPiece;
 		
-		currentPiece = Instantiate(m_levelPieces[Random.Range (0, m_levelPieces.Length)], Vector3.zero, Quaternion.identity) as Transform;
+		currentPiece = Instantiate(m_levelPieces[Random.Range (0, m_levelPieces.Length)]) as Transform;
 		SetCheckpoint(currentPiece.GetComponent<LevelPieceScript>().GetCheckpoint ());
+		currentPiece.GetComponent<LevelPieceScript>().HideTreasure();
 		Respawn();
 		
 		while (levelCount < levelPieces)
@@ -38,6 +39,11 @@ public class GameControllerScript : MonoBehaviour
 			}
 			
 			levelCount++;
+			
+			if (levelCount < levelPieces)
+			{
+				currentPiece.GetComponent<LevelPieceScript>().HideTreasure();
+			}
 		}
 	}
 	
@@ -50,6 +56,36 @@ public class GameControllerScript : MonoBehaviour
 	public void AddPoint(int _playerID)
 	{
 		m_points[_playerID]++;
+	}
+	
+	public void GetTreasure(int _playerID)
+	{
+		m_points[_playerID] += 20;
+		
+		int winningPoints = 0;
+		
+		foreach (int points in m_points)
+		{
+			if (points > winningPoints)
+			{
+				winningPoints = points;
+			}
+		}
+		
+		for (int i = 0; i < m_players.Length; i++)
+		{
+			if (m_players[i].gameObject.activeInHierarchy)
+			{
+				if (m_points[i] == winningPoints)
+				{
+					m_players[i].SendMessage("StageClear", true);
+				}
+				else
+				{
+					m_players[i].SendMessage("StageClear", false);
+				}
+			}
+		}
 	}
 	
 	public void SetCheckpoint(Transform _checkpoint)

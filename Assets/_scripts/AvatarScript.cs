@@ -17,7 +17,8 @@ public class AvatarScript : MonoBehaviour
 		Running,
 		Jumping,
 		Falling,
-		Anchored
+		Anchored,
+		StageClear
 	}
 
 	public int m_playerID;
@@ -59,6 +60,20 @@ public class AvatarScript : MonoBehaviour
 	public Tether.Node GetTether()
 	{
 		return tether;
+	}
+	
+	public void StageClear(bool _winner)
+	{
+		controlState = ControlState.StageClear;
+		
+		if (_winner)
+		{
+			m_anim.Play ("idle");
+		}
+		else
+		{
+			m_anim.Play ("idle");
+		}
 	}
 
 	string Player ()
@@ -114,7 +129,21 @@ public class AvatarScript : MonoBehaviour
 			}
 		}
 		
-		Debug.Log ("player ID " + m_playerID + " : " + m_velocity.y);
+		if (controlState == ControlState.StageClear)
+		{
+			if (grounded)
+			{
+				rigidbody.velocity = Vector3.zero;
+			}
+			else
+			{
+				m_velocity.y += m_playerGravity * Time.deltaTime;
+				
+				rigidbody.velocity = m_velocity;
+			}
+			
+			return;
+		}
 		
 		// detect state change
 		if(grounded)
