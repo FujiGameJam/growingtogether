@@ -49,9 +49,9 @@ public class Tether : MonoBehaviour
 
 	class TetherTransform
 	{
-		public TetherTransform(string nodeName, TetherTransform parent)
+		public TetherTransform(GameObject tetherVis, string nodeName, TetherTransform parent)
 		{
-			t = GameObject.Find(nodeName).transform;
+			t = tetherVis.transform.Find(nodeName);
 			this.parent = parent;
 		}
 
@@ -87,26 +87,35 @@ public class Tether : MonoBehaviour
 			players[avatar.m_playerID] = avatar;
 		}
 
+		string visName = "goo_" + players.Length.ToString();
+		GameObject tetherVis = GameObject.Find(visName);
+
 		tetherTransforms = new TetherTransform[4];
-		tetherTransforms[0] = new TetherTransform("bone_s_001", null);
-		tetherTransforms[0] = new TetherTransform("bone_s_002", tetherTransforms[0]);
-		tetherTransforms[0] = new TetherTransform("bone_s_003", tetherTransforms[0]);
-		tetherTransforms[0] = new TetherTransform("bone_s_004", tetherTransforms[0]);
+		tetherTransforms[0] = new TetherTransform(tetherVis, "bone_s_001", null);
+		tetherTransforms[0] = new TetherTransform(tetherVis, "bone_s_002", tetherTransforms[0]);
+		tetherTransforms[0] = new TetherTransform(tetherVis, "bone_s_003", tetherTransforms[0]);
+		tetherTransforms[0] = new TetherTransform(tetherVis, "bone_s_004", tetherTransforms[0]);
 
-		tetherTransforms[1] = new TetherTransform("bone_e_001", null);
-		tetherTransforms[1] = new TetherTransform("bone_e_002", tetherTransforms[1]);
-		tetherTransforms[1] = new TetherTransform("bone_e_003", tetherTransforms[1]);
-		tetherTransforms[1] = new TetherTransform("bone_e_004", tetherTransforms[1]);
+		tetherTransforms[1] = new TetherTransform(tetherVis, "bone_e_001", null);
+		tetherTransforms[1] = new TetherTransform(tetherVis, "bone_e_002", tetherTransforms[1]);
+		tetherTransforms[1] = new TetherTransform(tetherVis, "bone_e_003", tetherTransforms[1]);
+		tetherTransforms[1] = new TetherTransform(tetherVis, "bone_e_004", tetherTransforms[1]);
 
-		tetherTransforms[2] = new TetherTransform("bone_n_001", null);
-		tetherTransforms[2] = new TetherTransform("bone_n_002", tetherTransforms[2]);
-		tetherTransforms[2] = new TetherTransform("bone_n_003", tetherTransforms[2]);
-		tetherTransforms[2] = new TetherTransform("bone_n_004", tetherTransforms[2]);
+		if (players.Length > 2)
+		{
+			tetherTransforms[2] = new TetherTransform(tetherVis, "bone_n_001", null);
+			tetherTransforms[2] = new TetherTransform(tetherVis, "bone_n_002", tetherTransforms[2]);
+			tetherTransforms[2] = new TetherTransform(tetherVis, "bone_n_003", tetherTransforms[2]);
+			tetherTransforms[2] = new TetherTransform(tetherVis, "bone_n_004", tetherTransforms[2]);
+		}
 
-		tetherTransforms[3] = new TetherTransform("bone_w_001", null);
-		tetherTransforms[3] = new TetherTransform("bone_w_002", tetherTransforms[3]);
-		tetherTransforms[3] = new TetherTransform("bone_w_003", tetherTransforms[3]);
-		tetherTransforms[3] = new TetherTransform("bone_w_004", tetherTransforms[3]);
+		if (players.Length > 3)
+		{
+			tetherTransforms[3] = new TetherTransform(tetherVis, "bone_w_001", null);
+			tetherTransforms[3] = new TetherTransform(tetherVis, "bone_w_002", tetherTransforms[3]);
+			tetherTransforms[3] = new TetherTransform(tetherVis, "bone_w_003", tetherTransforms[3]);
+			tetherTransforms[3] = new TetherTransform(tetherVis, "bone_w_004", tetherTransforms[3]);
+		}
 	}
 
 	float Angle(float a1, float a2)
@@ -136,41 +145,63 @@ public class Tether : MonoBehaviour
 		transform.position = root.pos;
 
 		// find the order of players in a circle around the goo blob
-		Vector3 n0 = Vector3.Cross(players[1].transform.position - players[0].transform.position, players[2].transform.position - players[0].transform.position);
-		Vector3 n1 = Vector3.Cross(players[2].transform.position - players[0].transform.position, players[3].transform.position - players[0].transform.position);
-		if (n0.y < 0.0f) n0 = -n0;
-		if (n1.y < 0.0f) n1 = -n1;
-		playerPlane = new Plane((n0 + n1).normalized, root.pos);
+		switch (players.Length)
+		{
+			case 2:
+			{
+				Vector3 diff = players[1].transform.position - players[0].transform.position;
+				Vector3 n = Vector3.Cross(diff, Vector3.Cross(diff, Vector3.up));
+				if (n.y < 0.0f)
+					n = -n;
+				playerPlane = new Plane(n.normalized, root.pos);
+				break;
+			}
+			case 3:
+			{
+				Vector3 n = Vector3.Cross(players[1].transform.position - players[0].transform.position, players[2].transform.position - players[0].transform.position);
+				if (n.y < 0.0f)
+					n = -n;
+				playerPlane = new Plane(n.normalized, root.pos);
+				break;
+			}
+			case 4:
+			{
+				Vector3 n0 = Vector3.Cross(players[1].transform.position - players[0].transform.position, players[2].transform.position - players[0].transform.position);
+				Vector3 n1 = Vector3.Cross(players[2].transform.position - players[0].transform.position, players[3].transform.position - players[0].transform.position);
+				if (n0.y < 0.0f) n0 = -n0;
+				if (n1.y < 0.0f) n1 = -n1;
+				playerPlane = new Plane((n0 + n1).normalized, root.pos);
+				break;
+			}
+			default:
+				break;
+		}
 
 		// generate coplanar normals for each player
-		playerNormals[0] = (players[0].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[0].transform.position) - root.pos).normalized;
-		playerNormals[1] = (players[1].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[1].transform.position) - root.pos).normalized;
-		playerNormals[2] = (players[2].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[2].transform.position) - root.pos).normalized;
-		playerNormals[3] = (players[3].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[3].transform.position) - root.pos).normalized;
+		for (int i = 0; i < players.Length; ++i)
+			playerNormals[i] = (players[i].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[i].transform.position) - root.pos).normalized;
 
 		Vector3 p0 = Vector3.Cross(Vector3.forward, playerPlane.normal);
 		Vector3 p1 = Vector3.Cross(Vector3.right, playerPlane.normal);
 
 		// calculate the angles for each player
-		float[] angles = new float[4];
-		angles[0] = Angle(Vector3.Dot(playerNormals[0], p0), Vector3.Dot(playerNormals[0], p1)) * Mathf.Rad2Deg;
-		angles[1] = Angle(Vector3.Dot(playerNormals[1], p0), Vector3.Dot(playerNormals[1], p1)) * Mathf.Rad2Deg;
-		angles[2] = Angle(Vector3.Dot(playerNormals[2], p0), Vector3.Dot(playerNormals[2], p1)) * Mathf.Rad2Deg;
-		angles[3] = Angle(Vector3.Dot(playerNormals[3], p0), Vector3.Dot(playerNormals[3], p1)) * Mathf.Rad2Deg;
+		float[] angles = new float[players.Length];
+		for (int i = 0; i < players.Length; ++i)
+			angles[i] = Angle(Vector3.Dot(playerNormals[i], p0), Vector3.Dot(playerNormals[i], p1));
 
 		// and from that we can conclude the order!
-		int[] order = new int[4];
-		int[] index = new int[4];
-		for(int i = 0; i < 4; ++i)
+		int[] order = new int[players.Length];
+		int[] index = new int[players.Length];
+		for (int i = 0; i < players.Length; ++i)
 		{
-			for(int j = 0; j < 4; ++j)
+			for (int j = 0; j < players.Length; ++j)
 			{
 				if (i != j && angles[i] <= angles[j])
 					++order[j];
 			}
 		}
 
-		for(int i = 0; i < 4; ++i)
+		for (int i = 0; i < players.Length; ++i)
 			index[order[i]] = i;
 
 		// rotate the goo blob
@@ -178,7 +209,7 @@ public class Tether : MonoBehaviour
 		blobTransform.LookAt(root.pos + playerNormals[index[0]], playerPlane.normal);
 
 		// set the tethers
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < players.Length; ++i)
 			SetNodeMatrix(players[index[i]].GetTether(), tetherTransforms[i], players[index[i]].GetTether().pos, playerPlane.normal);
 	}
 
