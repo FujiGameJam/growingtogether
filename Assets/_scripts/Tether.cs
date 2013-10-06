@@ -8,7 +8,7 @@ public class Tether : MonoBehaviour
 	public int solverIterations = 5;
 	public float gravityScale = 0.1f;
 	public float friction = 2.0f;
-	static public float tensionRamp = 1.7f;
+	static public float tensionRamp = 1.5f;
 	static public float purchaseDistance = 2.0f;
 
 	float sphereSize = 0.2f;
@@ -59,7 +59,7 @@ public class Tether : MonoBehaviour
 		public TetherTransform parent;
 	}
 
-	public Transform blobTransform;
+	Transform blobTransform;
 	TetherTransform[] tetherTransforms;
 
 	AvatarScript[] players;
@@ -89,6 +89,8 @@ public class Tether : MonoBehaviour
 
 		string visName = "goo_" + players.Length.ToString();
 		GameObject tetherVis = GameObject.Find(visName);
+
+		blobTransform = tetherVis.transform.Find("bone_root");
 
 		tetherTransforms = new TetherTransform[4];
 		tetherTransforms[0] = new TetherTransform(tetherVis, "bone_s_001", null);

@@ -8,9 +8,13 @@ public class GameControllerScript : MonoBehaviour
 	public Transform[] m_levelPieces;
 	public int m_levelPiecesMin = 6;
 	public int m_levelPiecesMax = 8;
+
+	public TextMesh[] m_scoreText;
 	
 	int[] m_points = new int[4];
 	Transform m_checkpoint;
+
+	int numPlayers;
 	
 	// Use this for initialization
 	void Start ()
@@ -24,7 +28,32 @@ public class GameControllerScript : MonoBehaviour
 		SetCheckpoint(currentPiece.GetComponent<LevelPieceScript>().GetCheckpoint ());
 		currentPiece.GetComponent<LevelPieceScript>().HideTreasure();
 		Respawn();
-		
+
+		numPlayers = 0;
+		for (int i = 0; i < 4; ++i)
+		{
+			if (m_players[i].gameObject.activeInHierarchy)
+			{
+				++numPlayers;
+				m_scoreText[i].gameObject.SetActive(true);
+				m_scoreText[i].text = "0";
+			}
+			else
+			{
+				m_scoreText[i].gameObject.SetActive(false);
+			}
+		}
+
+		// layout scores
+		float scoreArea = 0.3f;
+		float scoreIncrement = scoreArea / (numPlayers - 1);
+		for (int i = 0; i < numPlayers; ++i)
+		{
+			Vector3 pos = m_scoreText[i].transform.localPosition;
+			pos.x = -scoreArea * 0.5f + scoreIncrement * i;
+			m_scoreText[i].transform.localPosition = pos;
+		}
+
 		while (levelCount < levelPieces)
 		{
 			levelConnectScript levelConnect = currentPiece.GetComponent<LevelPieceScript>().GetLevelConnect();
@@ -56,6 +85,8 @@ public class GameControllerScript : MonoBehaviour
 	public void AddPoint(int _playerID)
 	{
 		m_points[_playerID]++;
+
+		m_scoreText[_playerID].text = m_points[_playerID].ToString();
 	}
 	
 	public void GetTreasure(int _playerID)
