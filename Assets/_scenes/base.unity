@@ -2788,7 +2788,7 @@ MonoBehaviour:
   m_turnSpeed: 5
   m_jumpVelocity: 20
   m_playerGravity: -50
-  m_airTensionMultiplier: 1
+  m_airTensionMultiplier: .5
   m_waterDamping: 3
   m_tetherAttachment: {fileID: 1518315795}
 --- !u!54 &324618765
@@ -3234,7 +3234,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_airTensionMultiplier
-      value: 1
+      value: .5
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_tetherAttachment
@@ -4476,7 +4476,7 @@ MonoBehaviour:
   m_turnSpeed: 5
   m_jumpVelocity: 20
   m_playerGravity: -50
-  m_airTensionMultiplier: 1
+  m_airTensionMultiplier: .5
   m_waterDamping: 3
   m_tetherAttachment: {fileID: 537080699}
 --- !u!54 &547553378
@@ -5373,7 +5373,7 @@ MonoBehaviour:
   m_turnSpeed: 5
   m_jumpVelocity: 20
   m_playerGravity: -50
-  m_airTensionMultiplier: 1
+  m_airTensionMultiplier: .5
   m_waterDamping: 3
   m_tetherAttachment: {fileID: 96090510}
 --- !u!54 &685594654
@@ -9209,7 +9209,7 @@ MonoBehaviour:
   m_turnSpeed: 5
   m_jumpVelocity: 20
   m_playerGravity: -50
-  m_airTensionMultiplier: 1
+  m_airTensionMultiplier: .5
   m_waterDamping: 3
   m_tetherAttachment: {fileID: 67453504}
 --- !u!54 &1173094931
@@ -14453,7 +14453,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_airTensionMultiplier
-      value: 1
+      value: .5
       objectReference: {fileID: 0}
     - target: {fileID: 400068, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_LocalRotation.x
@@ -18146,7 +18146,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_airTensionMultiplier
-      value: 1
+      value: .5
       objectReference: {fileID: 0}
     - target: {fileID: 100098, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_IsActive
@@ -18558,7 +18558,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_airTensionMultiplier
-      value: 1
+      value: .5
       objectReference: {fileID: 0}
     - target: {fileID: 100098, guid: 970fb739f411b7840883b4bcf98d8814, type: 2}
       propertyPath: m_IsActive

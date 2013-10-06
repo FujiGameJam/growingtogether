@@ -218,13 +218,13 @@ public class AvatarScript : MonoBehaviour
 					controlState = ControlState.Falling;
 
 				Vector3 force = tether.Force();
-				float dir = Vector3.Dot(inputVector, force);
+				float dir = Vector3.Dot(inputVector, force.normalized);
 
 				// handle sling-shot manoeuvre
 				float extraAction = (dir > 0.0f ? dir * m_airTensionMultiplier * 60.0f : 1.0f);
 
 				// handle tether force
-				m_velocity += tether.Force() * extraAction * Time.deltaTime;
+				m_velocity += force * extraAction * Time.deltaTime;
 
 				// if they're in the water, apply bouyancy
 				if(transform.position.y < 0.0f)
