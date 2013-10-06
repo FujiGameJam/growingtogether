@@ -348,7 +348,7 @@ public class Tether : MonoBehaviour
 		}
 	}
 
-	public void Teleport()
+	public void Reset()
 	{
 		// find new root, average of player positions
 		root.pos = Vector3.zero;
@@ -356,6 +356,7 @@ public class Tether : MonoBehaviour
 			root.pos += player.transform.position;
 		root.pos /= players.Length;
 		root.pos += Vector3.up;
+		root.prevPos = root.pos;
 
 		// set tether chain nodes
 		foreach (var player in players)
