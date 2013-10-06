@@ -44,12 +44,16 @@ public class AvatarScript : MonoBehaviour
 	Tether.Node tether;
 
 	ControlState controlState = ControlState.Walking;
-
+	
+	public AudioClip m_splashSound;
+	
 	public void Reset()
 	{
 		rigidbody.velocity = Vector3.zero;
 		m_velocity = Vector3.zero;
 		m_timeInWater = 0.0f;
+		
+		controlState = ControlState.Falling;
 	}
 
 	public void SetTether(Tether.Node n)
@@ -68,11 +72,11 @@ public class AvatarScript : MonoBehaviour
 		
 		if (_winner)
 		{
-			m_anim.Play ("idle");
+			m_anim.Play ("celebrate_flex");
 		}
 		else
 		{
-			m_anim.Play ("idle");
+			m_anim.Play ("celebrate");
 		}
 	}
 
@@ -107,7 +111,9 @@ public class AvatarScript : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-
+		m_anim["celebrate"].speed = Random.Range (0.9f, 1.1f);
+		m_anim["jog"].speed = Random.Range (0.9f, 1.1f);
+		m_anim["run"].speed = Random.Range (0.9f, 1.1f);
 	}
 
 	// Update is called once per frame
@@ -141,6 +147,11 @@ public class AvatarScript : MonoBehaviour
 				
 				rigidbody.velocity = m_velocity;
 			}
+			
+			Vector3 cameraDirection = Camera.main.transform.position - transform.position;
+			cameraDirection.y = 0.0f;
+			
+			transform.rotation = Quaternion.Slerp (transform.rotation, Quaternion.LookRotation (cameraDirection), Time.deltaTime * 3.0f);
 			
 			return;
 		}
@@ -189,7 +200,22 @@ public class AvatarScript : MonoBehaviour
 				if (inputVector.magnitude > 0.1f)
 				{
 					transform.rotation = Quaternion.Slerp (transform.rotation, Quaternion.LookRotation (inputVector), Time.deltaTime * m_turnSpeed);
-					m_anim.CrossFade ("jog", 0.125f);
+					
+					if (controlState == ControlState.Walking)
+					{
+						m_anim.CrossFade ("jog", 0.125f);
+					}
+					else
+					{
+						if (tether.Force().magnitude > 7.0f)
+						{
+							m_anim.CrossFade ("pull_run", 0.3f);
+						}
+						else
+						{
+							m_anim.CrossFade ("run", 0.3f);
+						}
+					}
 				}
 				else
 				{
@@ -232,13 +258,21 @@ public class AvatarScript : MonoBehaviour
 					m_velocity.y += -m_playerGravity*-transform.position.y*0.7f*Time.deltaTime;
 					m_velocity *= 1.0f-m_waterDamping*Time.deltaTime;
 				
+					if (m_timeInWater == 0.0f)
+					{
+						AudioSource.PlayClipAtPoint(m_splashSound, transform.position);
+					}
+				
 					m_anim.CrossFade ("swim", 0.25f);
 				
 					m_timeInWater += Time.deltaTime;
 				
 					if (m_timeInWater > 1.5f)
 					{
-						GameObject.FindGameObjectWithTag ("GameController").GetComponent<GameControllerScript>().Respawn ();
+						GameControllerScript gameController = GameObject.FindGameObjectWithTag ("GameController").GetComponent<GameControllerScript>();
+					
+						gameController.LosePoints(m_playerID);
+						gameController.Respawn ();
 					}
 				}
 				else

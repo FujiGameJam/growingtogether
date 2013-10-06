@@ -213,6 +213,15 @@ public class Tether : MonoBehaviour
 		// set the tethers
 		for (int i = 0; i < players.Length; ++i)
 			SetNodeMatrix(players[index[i]].GetTether(), tetherTransforms[i], players[index[i]].GetTether().pos, playerPlane.normal);
+		
+		
+		float maxForce = 0.0f;
+		for (int i = 0; i < players.Length; ++i)
+		{
+			maxForce = Mathf.Max (maxForce, players[index[i]].GetTether().Force().magnitude);
+		}
+		
+		audio.volume = Mathf.InverseLerp(0.0f, 15.0f, maxForce);
 	}
 
 	void OnDrawGizmos()

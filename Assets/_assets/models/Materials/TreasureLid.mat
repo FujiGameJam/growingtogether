@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: TreasureLid
-  m_Shader: {fileID: 3, guid: 0000000000000000e000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: c80265a23ce19c6478216c2944ae3d63, type: 3}
   m_ShaderKeywords: []
   m_SavedProperties:
     serializedVersion: 2
@@ -24,6 +24,10 @@ Material:
         first:
           name: _Shininess
         second: .413518399
+      data:
+        first:
+          name: _RimPower
+        second: 3
     m_Colors:
       data:
         first:

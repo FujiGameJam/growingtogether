@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: goo
-  m_Shader: {fileID: 33, guid: 0000000000000000e000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: 704e921d5271f0548bfe69061885eb38, type: 3}
   m_ShaderKeywords: []
   m_SavedProperties:
     serializedVersion: 2
@@ -31,6 +31,10 @@ Material:
         first:
           name: _Shininess
         second: .178353682
+      data:
+        first:
+          name: _RimPower
+        second: 3
     m_Colors:
       data:
         first:

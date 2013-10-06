@@ -24,6 +24,9 @@ public class GameControllerScript : MonoBehaviour
 
 	int menuSelection;
 	
+	public AudioClip m_coinSound;
+	public AudioClip m_failSound;
+	
 	// Use this for initialization
 	void Start ()
 	{
@@ -99,6 +102,13 @@ public class GameControllerScript : MonoBehaviour
 		m_points[_playerID]++;
 
 		m_scoreText[_playerID].text = m_points[_playerID].ToString();
+		AudioSource.PlayClipAtPoint(m_coinSound, m_players[_playerID].position);
+	}
+	
+	public void LosePoints(int _playerID)
+	{
+		m_points[_playerID] = Mathf.Max(0, m_points[_playerID] - 10);
+		AudioSource.PlayClipAtPoint(m_failSound, Vector3.zero);
 	}
 	
 	public void GetTreasure(int _playerID)
@@ -161,7 +171,7 @@ public class GameControllerScript : MonoBehaviour
 				if (m_players[i].gameObject.activeInHierarchy)
 				{
 					float angle = (45.0f + (90.0f * i)) * Mathf.Deg2Rad;
-					m_players[i].position = m_checkpoint.position + new Vector3(Mathf.Sin (angle), 0.0f, Mathf.Cos (-angle)) * 2.0f;
+					m_players[i].position = m_checkpoint.position + new Vector3(Mathf.Sin (angle), 5.0f, Mathf.Cos (-angle)) * 2.0f;
 					m_players[i].rotation = m_checkpoint.rotation;
 					
 					m_players[i].SendMessage("Reset");
