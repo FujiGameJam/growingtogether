@@ -10,11 +10,19 @@ public class GameControllerScript : MonoBehaviour
 	public int m_levelPiecesMax = 8;
 
 	public TextMesh[] m_scoreText;
-	
+
+	public Font m_activeText;
+	public Font m_inactiveText;
+	public TextMesh m_againText;
+	public TextMesh m_exitText;
+	public GameObject m_booty;
+
 	int[] m_points = new int[4];
 	Transform m_checkpoint;
 
 	int numPlayers;
+
+	int menuSelection;
 	
 	// Use this for initialization
 	void Start ()
@@ -74,6 +82,10 @@ public class GameControllerScript : MonoBehaviour
 				currentPiece.GetComponent<LevelPieceScript>().HideTreasure();
 			}
 		}
+
+		m_againText.gameObject.SetActive(false);
+		m_exitText.gameObject.SetActive(false);
+		m_booty.SetActive(false);
 	}
 	
 	// Update is called once per frame
@@ -117,6 +129,22 @@ public class GameControllerScript : MonoBehaviour
 				}
 			}
 		}
+
+		m_booty.SetActive(true);
+
+		menuSelection = 0;
+
+		UpdateText();
+	}
+
+	void UpdateText()
+	{
+		m_againText.gameObject.SetActive(true);
+		m_againText.font = m_activeText;
+		m_againText.characterSize = 1.5f;
+		m_exitText.gameObject.SetActive(true);
+		m_exitText.font = m_inactiveText;
+		m_exitText.characterSize = 1.0f;
 	}
 	
 	public void SetCheckpoint(Transform _checkpoint)
