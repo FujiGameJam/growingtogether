@@ -5,10 +5,10 @@ using System.Collections.Generic;
 public class Tether : MonoBehaviour
 {
 	public int numNodes = 5;
-	public int solverIterations = 3;
+	public int solverIterations = 5;
 	public float gravityScale = 0.1f;
 	public float friction = 2.0f;
-	static public float tensionRamp = 1.5f;
+	static public float tensionRamp = 1.7f;
 	static public float purchaseDistance = 2.0f;
 
 	float sphereSize = 0.2f;
@@ -47,6 +47,26 @@ public class Tether : MonoBehaviour
 
 	Node root;
 
+	class TetherTransform
+	{
+		public TetherTransform(string nodeName, TetherTransform parent)
+		{
+			t = GameObject.Find(nodeName).transform;
+			this.parent = parent;
+		}
+
+		public Transform t;
+		public TetherTransform parent;
+	}
+
+	public Transform blobTransform;
+	TetherTransform[] tetherTransforms;
+
+	AvatarScript[] players;
+
+	Vector3[] playerNormals = new Vector3[4];
+	Plane playerPlane;
+
 	// Use this for initialization
 	void Start()
 	{
@@ -57,37 +77,131 @@ public class Tether : MonoBehaviour
 
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
 
+		players = new AvatarScript[objects.Length];
 		foreach (var player in objects)
 		{
 			AvatarScript avatar = player.GetComponent<AvatarScript>();
 			Node tether = CreateTendril(player.transform.position, numNodes);
 			avatar.SetTether(tether);
+
+			players[avatar.m_playerID] = avatar;
 		}
+
+		tetherTransforms = new TetherTransform[4];
+		tetherTransforms[0] = new TetherTransform("bone_s_001", null);
+		tetherTransforms[0] = new TetherTransform("bone_s_002", tetherTransforms[0]);
+		tetherTransforms[0] = new TetherTransform("bone_s_003", tetherTransforms[0]);
+		tetherTransforms[0] = new TetherTransform("bone_s_004", tetherTransforms[0]);
+
+		tetherTransforms[1] = new TetherTransform("bone_e_001", null);
+		tetherTransforms[1] = new TetherTransform("bone_e_002", tetherTransforms[1]);
+		tetherTransforms[1] = new TetherTransform("bone_e_003", tetherTransforms[1]);
+		tetherTransforms[1] = new TetherTransform("bone_e_004", tetherTransforms[1]);
+
+		tetherTransforms[2] = new TetherTransform("bone_n_001", null);
+		tetherTransforms[2] = new TetherTransform("bone_n_002", tetherTransforms[2]);
+		tetherTransforms[2] = new TetherTransform("bone_n_003", tetherTransforms[2]);
+		tetherTransforms[2] = new TetherTransform("bone_n_004", tetherTransforms[2]);
+
+		tetherTransforms[3] = new TetherTransform("bone_w_001", null);
+		tetherTransforms[3] = new TetherTransform("bone_w_002", tetherTransforms[3]);
+		tetherTransforms[3] = new TetherTransform("bone_w_003", tetherTransforms[3]);
+		tetherTransforms[3] = new TetherTransform("bone_w_004", tetherTransforms[3]);
+	}
+
+	float Angle(float a1, float a2)
+	{
+		if (a2 >= 0.0f)
+			return Mathf.Acos(a1);
+		else
+			return Mathf.PI * 2.0f - Mathf.Acos(a1);
+	}
+
+	void SetNodeMatrix(Node n, TetherTransform t, Vector3 nextPos, Vector3 up)
+	{
+		if(t.parent != null)
+			SetNodeMatrix(n.parent, t.parent, n.pos, up);
+		t.t.position = n.pos;
+		t.t.LookAt(n.pos + (nextPos - n.parent.pos).normalized, up);
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
-		GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-		foreach (var player in objects)
-		{
-			AvatarScript avatar = player.GetComponent<AvatarScript>();
-			avatar.GetTether().pos = avatar.transform.position + Vector3.up;
-		}
+		foreach (var player in players)
+			player.GetTether().pos = player.m_tetherAttachment.position;
 
 		Step();
 
 		transform.position = root.pos;
+
+		// find the order of players in a circle around the goo blob
+		Vector3 n0 = Vector3.Cross(players[1].transform.position - players[0].transform.position, players[2].transform.position - players[0].transform.position);
+		Vector3 n1 = Vector3.Cross(players[2].transform.position - players[0].transform.position, players[3].transform.position - players[0].transform.position);
+		if (n0.y < 0.0f) n0 = -n0;
+		if (n1.y < 0.0f) n1 = -n1;
+		playerPlane = new Plane((n0 + n1).normalized, root.pos);
+
+		// generate coplanar normals for each player
+		playerNormals[0] = (players[0].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[0].transform.position) - root.pos).normalized;
+		playerNormals[1] = (players[1].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[1].transform.position) - root.pos).normalized;
+		playerNormals[2] = (players[2].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[2].transform.position) - root.pos).normalized;
+		playerNormals[3] = (players[3].transform.position + playerPlane.normal * -playerPlane.GetDistanceToPoint(players[3].transform.position) - root.pos).normalized;
+
+		Vector3 p0 = Vector3.Cross(Vector3.forward, playerPlane.normal);
+		Vector3 p1 = Vector3.Cross(Vector3.right, playerPlane.normal);
+
+		// calculate the angles for each player
+		float[] angles = new float[4];
+		angles[0] = Angle(Vector3.Dot(playerNormals[0], p0), Vector3.Dot(playerNormals[0], p1)) * Mathf.Rad2Deg;
+		angles[1] = Angle(Vector3.Dot(playerNormals[1], p0), Vector3.Dot(playerNormals[1], p1)) * Mathf.Rad2Deg;
+		angles[2] = Angle(Vector3.Dot(playerNormals[2], p0), Vector3.Dot(playerNormals[2], p1)) * Mathf.Rad2Deg;
+		angles[3] = Angle(Vector3.Dot(playerNormals[3], p0), Vector3.Dot(playerNormals[3], p1)) * Mathf.Rad2Deg;
+
+		// and from that we can conclude the order!
+		int[] order = new int[4];
+		int[] index = new int[4];
+		for(int i = 0; i < 4; ++i)
+		{
+			for(int j = 0; j < 4; ++j)
+			{
+				if (i != j && angles[i] <= angles[j])
+					++order[j];
+			}
+		}
+
+		for(int i = 0; i < 4; ++i)
+			index[order[i]] = i;
+
+		// rotate the goo blob
+		blobTransform.position = root.pos;
+		blobTransform.LookAt(root.pos + playerNormals[index[0]], playerPlane.normal);
+
+		// set the tethers
+		for (int i = 0; i < 4; ++i)
+			SetNodeMatrix(players[index[i]].GetTether(), tetherTransforms[i], players[index[i]].GetTether().pos, playerPlane.normal);
 	}
 
 	void OnDrawGizmos()
 	{
 		if (nodes == null)
 			return;
-
+/*
 		Gizmos.color = Color.blue;
 		foreach (var node in nodes)
 			Gizmos.DrawSphere(node.pos, sphereSize);
+
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawLine(root.pos, root.pos + playerNormals[0]);
+		Gizmos.color = Color.blue;
+		Gizmos.DrawLine(root.pos, root.pos + playerNormals[1]);
+		Gizmos.color = Color.green;
+		Gizmos.DrawLine(root.pos, root.pos + playerNormals[2]);
+		Gizmos.color = Color.gray;
+		Gizmos.DrawLine(root.pos, root.pos + playerNormals[3]);
+		Gizmos.color = Color.white;
+		Gizmos.DrawLine(root.pos, root.pos + playerPlane.normal);
+*/
 	}
 
 	Node CreateNode(Vector3 pos, float mass, Node parent)
@@ -98,7 +212,6 @@ public class Tether : MonoBehaviour
 		n.prevPos = n.pos = pos;
 		n.mass = mass;
 		n.parent = parent;
-		//n.tether = this;
 		nodes.Add(n);
 		return n;
 	}
@@ -206,31 +319,29 @@ public class Tether : MonoBehaviour
 	{
 		// find new root, average of player positions
 		root.pos = Vector3.zero;
-		GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-		foreach (var player in objects)
+		foreach (var player in players)
 			root.pos += player.transform.position;
-		root.pos /= objects.Length;
+		root.pos /= players.Length;
 		root.pos += Vector3.up;
 
 		// set tether chain nodes
-		foreach (var player in objects)
+		foreach (var player in players)
 		{
-			AvatarScript avatar = player.GetComponent<AvatarScript>();
-			Node n = avatar.GetTether();
+			Node n = player.GetTether();
 
 			// tether starts at player position
-			Vector3 tether = avatar.transform.position - root.pos;
+			Vector3 tether = player.transform.position - root.pos;
 			tether /= numNodes;
 
 			// nodes lerp between player position and root position for each node back towards the root
 			for (var i = 0; i < numNodes; ++i)
 			{
-				n.prevPos = n.pos = avatar.transform.position + tether * i + Vector3.up;
+				n.prevPos = n.pos = player.m_tetherAttachment.position + tether * i;
 				n = n.parent;
 			}
 		}
 
-		// rin a simulation step
+		// run a simulation step
 		Step();
 
 		// set the transform to the root pos

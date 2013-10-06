@@ -10,7 +10,7 @@ public class AvatarScript : MonoBehaviour
 		player3,
 		player4
 	}
-	
+
 	enum ControlState
 	{
 		Walking,
@@ -19,29 +19,31 @@ public class AvatarScript : MonoBehaviour
 		Falling,
 		Anchored
 	}
-	
+
 	public int m_playerID;
 	public ControlID m_controlID = ControlID.player1;
-	
+
 	public Animation m_anim;
-	
+
 	public float m_movementSpeed = 5.0f;
 	public float m_runSpeed = 8.0f;
 	public float m_turnSpeed = 10.0f;
 	public float m_jumpVelocity = 20.0f;
 	public float m_playerGravity = -50.0f;
-	public float m_airTensionMultiplier = 3.0f;
+	public float m_airTensionMultiplier = 1.0f;
 	public float m_waterDamping = 10.0f;
 
+	public Transform m_tetherAttachment;
+
 	Vector3 m_velocity = Vector3.zero;
-	
+
 	float m_stamina = 1.0f;
 	float m_timeInWater = 0.0f;
 
 	Tether.Node tether;
-	
+
 	ControlState controlState = ControlState.Walking;
-	
+
 	public void Reset()
 	{
 		rigidbody.velocity = Vector3.zero;
@@ -97,7 +99,7 @@ public class AvatarScript : MonoBehaviour
 	void Update ()
 	{
 		Vector3 inputVector = new Vector3(Input.GetAxis ( Player() + "Horizontal" ), 0.0f, Input.GetAxis ( Player() + "Vertical" ));
-		
+
 		// detect is the player is on the ground
 		bool grounded = false;
 		if (controlState != ControlState.Jumping)
@@ -126,7 +128,7 @@ public class AvatarScript : MonoBehaviour
 			{
 				controlState = ControlState.Jumping;
 				grounded = false;
-				
+
 				// set initialvelocity
 				m_velocity = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
 				m_velocity.y = m_jumpVelocity;
@@ -149,9 +151,7 @@ public class AvatarScript : MonoBehaviour
 		}
 
 		if(!grounded && controlState != ControlState.Jumping)
-		{
 				controlState = ControlState.Falling;
-		}
 
 		switch(controlState)
 		{
@@ -183,17 +183,21 @@ public class AvatarScript : MonoBehaviour
 				Vector3 acc = inputVector * (controlState == ControlState.Running ? m_runSpeed : m_movementSpeed);
 				acc.y = m_playerGravity;
 
+				m_velocity += acc*Time.deltaTime;
+
+				if (m_velocity.y <= 0.0f)
+					controlState = ControlState.Falling;
+
 				Vector3 force = tether.Force();
 				float dir = Vector3.Dot(inputVector, force);
 
-				m_velocity += acc*Time.deltaTime;
-				m_velocity += tether.Force()*(dir > 0.0f? m_airTensionMultiplier*60.0f : 1.0f)*Time.deltaTime;
-			
-				if (controlState == ControlState.Jumping && m_velocity.y <= 0.0f)
-				{
-					controlState = ControlState.Falling;
-				}
+				// handle sling-shot manoeuvre
+				float extraAction = (dir > 0.0f ? dir * m_airTensionMultiplier * 60.0f : 1.0f);
 
+				// handle tether force
+				m_velocity += tether.Force() * extraAction * Time.deltaTime;
+
+				// if they're in the water, apply bouyancy
 				if(transform.position.y < 0.0f)
 				{
 					m_velocity.y += -m_playerGravity*-transform.position.y*0.7f*Time.deltaTime;
@@ -219,7 +223,18 @@ public class AvatarScript : MonoBehaviour
 				}
 				break;
 		}
-		
+
 		rigidbody.velocity = m_velocity;
+
+		// try casting a capcule along the velocity vector
+		foreach (RaycastHit hit in Physics.CapsuleCastAll(transform.position + new Vector3(0, 0.5f, 0), transform.position + new Vector3(0, 1.5f, 0), 0.5f, m_velocity.normalized, m_velocity.magnitude * Time.deltaTime))
+		{
+			if (hit.transform.CompareTag ("Player"))
+				continue;
+
+			// if we hit a wall, redirect the velocity.
+			int x = 0;
+
+		}
 	}
 }
